@@ -2,7 +2,12 @@
 
 ## About
 
-Stegano is a steganography program made by Yentup written in C. It uses `libpng` and `openssl` for encryption. It is currently in progress.
+Stegano is a steganography program made by Yentup written in C. It uses `libpng` and `openssl` for encryption. It is currently still in progress.
+
+## Features
+
+* Uses 256 bit AES for encryption
+* Hashes the password 65536 times with SHA512 for the key (the longer the key, the more secure it is)
 
 ## Todo
 
