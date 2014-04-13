@@ -6,7 +6,7 @@ Stegano is a steganography program made by Yentup written in C. It uses `libpng`
 
 ## Features
 
-* Hides plaintext data or files in png images (in progress)
+* Hides plaintext data or files in the least significant bits of png images (still being developed)
 * Uses 256 bit AES for encryption
 * Hashes the password 65536 times with SHA512 for the key (the longer the key, the more secure it is)
 
@@ -18,4 +18,4 @@ Simply run `./configure` and then `make`
 ## Todo
 
 * Fully test encryption
-* Implement main algorithm for least "two significant bit" steganography
+* Implement main algorithm for "least two significant bits" steganography
