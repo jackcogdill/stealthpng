@@ -123,6 +123,7 @@ Space available in image(s) (the higher the\n\
 		if (strcmp(pass, "") == 0)
 			Error("No password entered.");
 
+		// Prepare encryption and decryption:
 		// The salt paramter is used as a salt in the derivation:
 		// it should point to an 8 byte buffer or NULL if no salt is used.
 		unsigned char salt[] = {1, 2, 3, 4, 5, 6, 7, 8};
