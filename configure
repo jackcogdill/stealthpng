@@ -1,0 +1,27 @@
+#! /bin/bash
+
+echo $'CC=gcc
+CFLAGS=-c -O3' > makefile
+
+ldlibs=`pkg-config --libs libpng libcrypto`
+echo "LDLIBS=$ldlibs" >> makefile
+
+ldflags=`pkg-config --cflags libpng libcrypto`
+echo "LDFLAGS=$ldflags" >> makefile
+
+echo $'EXECUTABLE=stegano
+SOURCES=stegano.c AES_util.c png_util.c Error.c
+OBJECTS=$(SOURCES:.c=.o)
+VPATH=src
+
+all: $(SOURCES) $(EXECUTABLE)
+
+$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(LDLIBS) $(LDFLAGS) -o $(EXECUTABLE) $(OBJECTS)
+
+.c.o:
+	$(CC) $(CFLAGS) $(LDFLAGS) $< -o $@
+
+clean:
+	rm -f $(OBJECTS) $(EXECUTABLE)
+' >> makefile
