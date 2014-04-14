@@ -64,17 +64,23 @@ int main(int argc, char **argv) {
 	// Argument parsing
 	char usage[256];
 	char *pgrm = argv[0];
-	sprintf(usage, "Usage: %s -e [message/file] [image]\n\
+	sprintf(usage, "\
+Usage: %s -e [message/file] [image]\n\
        %s -d [image]\n\
-       %s -s [image(s)]", pgrm, pgrm, pgrm);
+       %s -s [image(s)]\
+", pgrm, pgrm, pgrm);
 
 	if (argc == 1)
 		Error(usage);
 
-	char *options = "\nOptions:\n  -h  Show this help message and exit\n\
-  -e  Encode data into image\n  -d  Decode data from image\n  -s  \
-Space available in image(s) (the higher the\n\
-      resolution, the more space available)";
+	char *options = "\n\
+Options:\n\
+  -h  Show this help message and exit\n\
+  -e  Encode data into image\n\
+  -d  Decode data from image\n\
+  -s  Space available in image(s) (the higher the\n\
+      resolution, the more space available)\
+";
 	char *e_arg = 0,
 	     *d_arg = 0,
 	     *s_arg = 0;
