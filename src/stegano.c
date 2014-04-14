@@ -4,7 +4,10 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <string.h>
+#include <libgen.h>
+
 #include "Error.h"
+#include "util.h"
 #include "png_util.h"
 #include "AES_util.h"
 
@@ -23,13 +26,14 @@
 // }
 
 void encode(char *msg, char *img) {
-	char *data;
+	unsigned char *data;
+	char *filename = NULL;
 	int len;
 
 	FILE *fp = fopen(msg, "rb");
 	if (!fp) {
-		data = msg;
-		len = strlen(data);
+		data = (unsigned char *) msg;
+		len = strlen(msg);
 	}
 	else {
 		// Read the file to data
@@ -37,13 +41,22 @@ void encode(char *msg, char *img) {
 		int size = len = ftell(fp);
 		rewind(fp);
 
-		data = malloc(size * sizeof(char));
-		int read_size = fread(data, sizeof(char), size, fp);
+		data = malloc(size * sizeof(unsigned char));
+		int read_size = fread(data, sizeof(unsigned char), size, fp);
 
 		if (size != read_size)
 			Error("Error reading file");
+
+		filename = basename(msg);
 	}
 	fclose(fp);
+
+	if (filename != NULL) {
+		printf("%s\n", filename);
+	}
+	else {
+
+	}
 
 	unsigned char *enc_data;
 	enc_data = aes_encrypt(&en, (unsigned char *)data, &len);
@@ -56,8 +69,8 @@ void decode(char *img) {
 
 	// int len = strlen(data);
 
-	// char *dec_data;
-	// dec_data = (char *) aes_decrypt(&de, data, &len);
+	// unsigned char *dec_data;
+	// dec_data = aes_decrypt(&de, data, &len);
 }
 
 int main(int argc, char **argv) {

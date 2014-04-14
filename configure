@@ -10,7 +10,7 @@ ldflags=`pkg-config --cflags libpng libcrypto`
 echo "LDFLAGS=$ldflags" >> makefile
 
 echo $'EXECUTABLE=stegano
-SOURCES=stegano.c AES_util.c png_util.c Error.c
+SOURCES=stegano.c AES_util.c png_util.c util.c Error.c
 OBJECTS=$(SOURCES:.c=.o)
 VPATH=src
 
