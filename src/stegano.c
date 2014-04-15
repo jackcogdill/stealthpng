@@ -68,14 +68,15 @@ void encode(char *msg, char *img) {
 	free(enc_data); // All we need now is the final data
 
 	if (filename)
-		sprintf(prefix, "<%d>", len);
-	else
 		sprintf(prefix, "<%s<%d>", filename, len);
+	else
+		sprintf(prefix, "<%d>", len);
 
 	// Prepend the encrypted data with the prefix of how long
 	// it is so we know where to stop when decoding
 	memmove(final_data+plen, final_data, len);
 	memcpy(final_data, prefix, plen);
+
 
 	// -----------------------------------------
 	// inject the encrypted data into image here
