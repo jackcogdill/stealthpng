@@ -40,9 +40,9 @@ void encode(char *msg, char *img) {
 	}
 	else {
 		filename = basename(msg);
-		int fplen = strlen(filename)+2;
+		int fplen = strlen(filename)+1;
 		char fprefix[fplen];
-		sprintf(fprefix, ":%s:", filename);
+		sprintf(fprefix, "%s:", filename);
 
 		// Read the file to data
 		fseek(fp, 0, SEEK_END);
@@ -71,10 +71,7 @@ void encode(char *msg, char *img) {
 
 	plen = digits(len)+1;
 	char prefix[plen];
-	if (filename)
-		sprintf(prefix, "%d>", len);
-	else
-		sprintf(prefix, "%d<", len);
+	sprintf(prefix, filename ? "%d>" : "%d<", len);
 	// The different symbols are to differentiate between file data and plaintext
 
 	final_len = plen + len;
@@ -92,6 +89,11 @@ void encode(char *msg, char *img) {
 	// inject the encrypted data into image here
 	// -----------------------------------------
 
+	// TESTING
+	FILE *fh = fopen("TEST", "wb");
+	for (int i = 0; i < final_len; i++) fputc(final_data[i], fh);
+	// ===========
+
 	free(final_data); // Done
 }
 
@@ -100,9 +102,72 @@ void decode(char *img) {
 	// encrypted data taken from image here
 	// ------------------------------------
 
-	// int len = strlen(data);
+	// TESTING
+	unsigned char *data, *dec_data;
 
-	// unsigned char *dec_data = aes_decrypt(&de, data, &len);
+	int size;
+	FILE *fp = fopen("TEST", "rb");
+	if (!fp)
+		Error("Error opening file for reading");
+	else {
+		// Read the file to data
+		fseek(fp, 0, SEEK_END);
+		size = ftell(fp);
+		rewind(fp);
+
+		data = malloc(size);
+
+		int read_size = fread(data, 1, size, fp);
+		if (size != read_size)
+			Error("Error reading file");
+	}
+
+	int len = 0, file = 0;
+	for (int i = 0; i < size; i++) {
+		if (data[i] == '<')
+			break;
+		else if (data[i] == '>') {
+			file = 1;
+			break;
+		}
+		else {
+			len *= 10;
+			len += data[i] - '0'; // Ascii to int (this works for digits)
+		}
+	}
+
+	printf("%d\n%s\n", len, file ? "File" : "Plaintext");
+
+	int plen = digits(len) +1; // Prefix length
+
+	printf("%d\n", len);
+	dec_data = aes_decrypt(&de, data+plen, &len);
+	printf("%d\n", len);
+
+	if (!file) {
+		for (int i = 0; i < len; i++) putchar(dec_data[i]);
+		puts("");
+	}
+	else {
+		int i = 0;
+		for (; i < len; i++) {
+			if (dec_data[i] == ':')
+				break;
+		}
+		if (!i || i >= len-1)
+			Error("Wrong password or corrupt data.");
+
+		printf("%d\n", i);
+		char *filename = malloc(i);
+		memcpy(filename, dec_data, i);
+		puts(filename);
+
+		// output to file
+		FILE *fh = fopen(filename, "wb");
+		// +1 for the colon
+		for (int j = i+1; j < len; j++) fputc(dec_data[j], fh);
+	}
+	// ===========
 }
 
 int main(int argc, char **argv) {
