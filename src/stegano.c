@@ -27,7 +27,7 @@
 
 void encode(char *msg, char *img) {
 	unsigned char *data, *enc_data, *final_data;
-	char *filename = NULL;
+	char *filename = 0;
 	int len, plen, final_len;
 
 	FILE *fp = fopen(msg, "rb");
@@ -53,14 +53,13 @@ void encode(char *msg, char *img) {
 			Error("Error reading file");
 	}
 	fclose(fp);
-	int file = filename != NULL; // this acts as a boolean
 
 	// Encrypt the data
 	enc_data = aes_encrypt(&en, data, &len);
 	// len gets updated here ^ to the new len of the encrypted data
 	free(data); // Don't need this anymore
 
-	plen = file ? strlen(filename) + digits(len)+3 : digits(len)+2;
+	plen = filename ? strlen(filename) + digits(len)+3 : digits(len)+2;
 	char prefix[plen];
 
 	final_len = plen + len;
@@ -68,7 +67,7 @@ void encode(char *msg, char *img) {
 	memcpy(final_data, enc_data, len);
 	free(enc_data); // All we need now is the final data
 
-	if (file)
+	if (filename)
 		sprintf(prefix, "<%d>", len);
 	else
 		sprintf(prefix, "<%s<%d>", filename, len);
@@ -180,9 +179,11 @@ Options:\n\
 	// Encode
 	if (e_arg)
 		encode(e_arg, last_args[0]);
+
 	// Decode
 	else if (d_arg)
 		decode(d_arg);
+
 	// Print space in image(s)
 	else if (s_arg) {
 		for (int i = 0; i < index; i++)
@@ -193,6 +194,7 @@ Options:\n\
 	if (opterr)
 		return 1;
 
+	// Clean up
 	free(last_args);
 	aes_clean();
 	png_clean();
