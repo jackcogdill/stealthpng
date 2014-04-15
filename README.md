@@ -19,3 +19,4 @@ Simply run `./configure` and then `make`
 
 * Fully test encryption
 * Implement main algorithm for "least two significant bits" steganography
+* Add functionality to display how much space an image can hold
