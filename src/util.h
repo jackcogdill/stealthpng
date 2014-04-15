@@ -3,7 +3,9 @@
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 char *byteconvert(unsigned long b_);
+int digits(int x);
 
 #endif

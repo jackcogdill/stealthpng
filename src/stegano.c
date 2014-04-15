@@ -26,46 +26,69 @@
 // }
 
 void encode(char *msg, char *img) {
-	unsigned char *data;
+	unsigned char *data, *enc_data, *final_data;
 	char *filename = NULL;
-	int len;
+	int len, plen, final_len;
 
 	FILE *fp = fopen(msg, "rb");
+	// Not saving the last null byte (in legal C strings) in either case
+	// because all the chars are going into the image
 	if (!fp) {
-		data = (unsigned char *) msg;
 		len = strlen(msg);
+		data = malloc(len);
+		memcpy(data, msg, len);
 	}
 	else {
 		// Read the file to data
 		fseek(fp, 0, SEEK_END);
-		int size = len = ftell(fp);
+		len = ftell(fp);
 		rewind(fp);
 
-		data = malloc(size * sizeof(unsigned char));
-		int read_size = fread(data, sizeof(unsigned char), size, fp);
-
-		if (size != read_size)
-			Error("Error reading file");
-
 		filename = basename(msg);
+		data = malloc(len);
+
+		// all chars are 1 byte
+		int read_size = fread(data, 1, len, fp);
+		if (len != read_size)
+			Error("Error reading file");
 	}
 	fclose(fp);
+	int file = filename != NULL; // this acts as a boolean
 
-	if (filename != NULL) {
-		printf("%s\n", filename);
-	}
-	else {
+	// Encrypt the data
+	enc_data = aes_encrypt(&en, data, &len);
+	// len gets updated here ^ to the new len of the encrypted data
+	free(data); // Don't need this anymore
 
-	}
+	plen = file ? strlen(filename) + digits(len)+3 : digits(len)+2;
+	char prefix[plen];
 
-	unsigned char *enc_data;
-	enc_data = aes_encrypt(&en, (unsigned char *)data, &len);
+	final_len = plen + len;
+	final_data = malloc(final_len);
+	memcpy(final_data, enc_data, len);
+	free(enc_data); // All we need now is the final data
 
-	// inject encrypted data into image here
+	if (file)
+		sprintf(prefix, "<%d>", len);
+	else
+		sprintf(prefix, "<%s<%d>", filename, len);
+
+	// Prepend the encrypted data with the prefix of how long
+	// it is so we know where to stop when decoding
+	memmove(final_data+plen, final_data, len);
+	memcpy(final_data, prefix, plen);
+
+	// -----------------------------------------
+	// inject the encrypted data into image here
+	// -----------------------------------------
+
+	free(final_data); // Done
 }
 
 void decode(char *img) {
-	// unsigned char *data taken from image here
+	// ------------------------------------
+	// encrypted data taken from image here
+	// ------------------------------------
 
 	// int len = strlen(data);
 
@@ -147,7 +170,7 @@ Options:\n\
 		// it should point to an 8 byte buffer or NULL if no salt is used.
 		unsigned char salt[] = {1, 2, 3, 4, 5, 6, 7, 8};
 
-		unsigned char *key_data = (unsigned char *)pass;
+		unsigned char *key_data = (unsigned char *) pass;
 		int key_data_len = strlen(pass);
 
 		// Gen key and iv. init the cipher ctx object
