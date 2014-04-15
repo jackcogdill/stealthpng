@@ -35,13 +35,8 @@ void encode(char *msg, char *img) {
 	// because all the chars are going into the image
 	if (!fp) {
 		len = strlen(msg);
-		data = malloc(len+1);
+		data = malloc(len);
 		memcpy(data, msg, len);
-
-		// Prepend a question mark so that we can differentiate between
-		// files and plaintext (the files will have colons)
-		memmove(data+1, data, len);
-		memcpy(data, "?", 1);
 	}
 	else {
 		filename = basename(msg);
@@ -74,9 +69,13 @@ void encode(char *msg, char *img) {
 	// len gets updated here ^ to the new len of the encrypted data
 	free(data); // Don't need this anymore
 
-	plen = digits(len)+2;
+	plen = digits(len)+1;
 	char prefix[plen];
-	sprintf(prefix, "<%d>", len);
+	if (filename)
+		sprintf(prefix, "%d>", len);
+	else
+		sprintf(prefix, "%d<", len);
+	// The different symbols are to differentiate between file data and plaintext
 
 	final_len = plen + len;
 	final_data = malloc(final_len);
