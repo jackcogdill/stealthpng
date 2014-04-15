@@ -35,22 +35,37 @@ void encode(char *msg, char *img) {
 	// because all the chars are going into the image
 	if (!fp) {
 		len = strlen(msg);
-		data = malloc(len);
+		data = malloc(len+1);
 		memcpy(data, msg, len);
+
+		// Prepend a question mark so that we can differentiate between
+		// files and plaintext (the files will have colons)
+		memmove(data+1, data, len);
+		memcpy(data, "?", 1);
 	}
 	else {
+		filename = basename(msg);
+		int fplen = strlen(filename)+2;
+		char fprefix[fplen];
+		sprintf(fprefix, ":%s:", filename);
+
 		// Read the file to data
 		fseek(fp, 0, SEEK_END);
-		len = ftell(fp);
+		int file_len = ftell(fp);
+		len = fplen + file_len;
 		rewind(fp);
 
-		filename = basename(msg);
 		data = malloc(len);
 
 		// all chars are 1 byte
-		int read_size = fread(data, 1, len, fp);
-		if (len != read_size)
+		int read_size = fread(data, 1, file_len, fp);
+		if (file_len != read_size)
 			Error("Error reading file");
+
+		// Prepend filename with colons (filenames can't have colons)
+		// Filename gets encrypted too
+		memmove(data+fplen, data, file_len);
+		memcpy(data, fprefix, fplen);
 	}
 	fclose(fp);
 
@@ -59,18 +74,14 @@ void encode(char *msg, char *img) {
 	// len gets updated here ^ to the new len of the encrypted data
 	free(data); // Don't need this anymore
 
-	plen = filename ? strlen(filename) + digits(len)+3 : digits(len)+2;
+	plen = digits(len)+2;
 	char prefix[plen];
+	sprintf(prefix, "<%d>", len);
 
 	final_len = plen + len;
 	final_data = malloc(final_len);
 	memcpy(final_data, enc_data, len);
 	free(enc_data); // All we need now is the final data
-
-	if (filename)
-		sprintf(prefix, "<%s<%d>", filename, len);
-	else
-		sprintf(prefix, "<%d>", len);
 
 	// Prepend the encrypted data with the prefix of how long
 	// it is so we know where to stop when decoding
@@ -92,8 +103,7 @@ void decode(char *img) {
 
 	// int len = strlen(data);
 
-	// unsigned char *dec_data;
-	// dec_data = aes_decrypt(&de, data, &len);
+	// unsigned char *dec_data = aes_decrypt(&de, data, &len);
 }
 
 int main(int argc, char **argv) {
