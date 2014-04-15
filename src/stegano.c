@@ -154,11 +154,11 @@ Options:\n\
 	if (s_arg)
 		sprintf(last_args[0], "%s", s_arg);
 
-	char pass[256];
 	if (e_arg || d_arg) {
 		if (e_arg && !index)
 			Error(usage);
 
+		char pass[256];
 		// Prompt for password
 		sprintf(pass, "%s", getpass("Password for encoding:"));
 		if (strcmp(pass, "") == 0)
@@ -194,7 +194,7 @@ Options:\n\
 	if (opterr)
 		return 1;
 
-	// Clean up
+	// Cleanup
 	free(last_args);
 	aes_clean();
 	png_clean();
