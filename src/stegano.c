@@ -85,89 +85,71 @@ void encode(char *msg, char *img) {
 	memcpy(final_data, prefix, plen);
 
 
-	// -----------------------------------------
-	// inject the encrypted data into image here
-	// -----------------------------------------
+	// Start injecting the encrypted data into the image
+	read_png_file(img);
+	int space = (width * height) * (3.0f / 4.0f);
+	if (final_len > space)
+		Error("Not enough space in image.\nData size: %s\nSpace available: %s",
+			byteconvert(final_len), byteconvert(space));
 
-	// TESTING
-	FILE *fh = fopen("TEST", "wb");
-	for (int i = 0; i < final_len; i++) fputc(final_data[i], fh);
-	// ===========
+	// inject data into image here
+
 
 	free(final_data); // Done
 }
 
 void decode(char *img) {
-	// ------------------------------------
-	// encrypted data taken from image here
-	// ------------------------------------
+	// unsigned char *data, *dec_data;
 
-	// TESTING
-	unsigned char *data, *dec_data;
+	// // ------------------------------------
+	// // encrypted data taken from image here
+	// // ------------------------------------
 
-	int size;
-	FILE *fp = fopen("TEST", "rb");
-	if (!fp)
-		Error("Error opening file for reading");
-	else {
-		// Read the file to data
-		fseek(fp, 0, SEEK_END);
-		size = ftell(fp);
-		rewind(fp);
+	// int len = 0, file = 0;
+	// for (int i = 0; i < size; i++) {
+	// 	if (data[i] == '<')
+	// 		break;
+	// 	else if (data[i] == '>') {
+	// 		file = 1;
+	// 		break;
+	// 	}
+	// 	else {
+	// 		len *= 10;
+	// 		len += data[i] - '0'; // Ascii to int (this works for digits)
+	// 		// -----> Need to catch potential errors here. do later
+	// 	}
+	// }
 
-		data = malloc(size);
+	// int plen = digits(len) +1; // Prefix length
 
-		int read_size = fread(data, 1, size, fp);
-		if (size != read_size)
-			Error("Error reading file");
-	}
+	// // Decrypt the data
+	// dec_data = aes_decrypt(&de, data+plen, &len);
 
-	int len = 0, file = 0;
-	for (int i = 0; i < size; i++) {
-		if (data[i] == '<')
-			break;
-		else if (data[i] == '>') {
-			file = 1;
-			break;
-		}
-		else {
-			len *= 10;
-			len += data[i] - '0'; // Ascii to int (this works for digits)
-		}
-	}
+	// // Output the plaintext
+	// if (!file) {
+	// 	puts("DATA:\n-----");
+	// 	for (int i = 0; i < len; i++) putchar(dec_data[i]);
+	// 	puts("");
+	// }
+	// else {
+	// 	int i = 0;
+	// 	// Filename cannot exceed 256
+	// 	for (; i < len && i <= 256; i++) {
+	// 		if (dec_data[i] == ':')
+	// 			break;
+	// 	}
+	// 	if (!i || i >= 256 || i >= len-1)
+	// 		Error("Wrong password or corrupt data.");
 
-	printf("%d\n%s\n", len, file ? "File" : "Plaintext");
+	// 	printf("%d\n", i);
+	// 	char *filename = malloc(i);
+	// 	memcpy(filename, dec_data, i);
 
-	int plen = digits(len) +1; // Prefix length
-
-	printf("%d\n", len);
-	dec_data = aes_decrypt(&de, data+plen, &len);
-	printf("%d\n", len);
-
-	if (!file) {
-		for (int i = 0; i < len; i++) putchar(dec_data[i]);
-		puts("");
-	}
-	else {
-		int i = 0;
-		for (; i < len; i++) {
-			if (dec_data[i] == ':')
-				break;
-		}
-		if (!i || i >= len-1)
-			Error("Wrong password or corrupt data.");
-
-		printf("%d\n", i);
-		char *filename = malloc(i);
-		memcpy(filename, dec_data, i);
-		puts(filename);
-
-		// output to file
-		FILE *fh = fopen(filename, "wb");
-		// +1 for the colon
-		for (int j = i+1; j < len; j++) fputc(dec_data[j], fh);
-	}
-	// ===========
+	// 	// output to file
+	// 	FILE *fh = fopen(filename, "wb");
+	// 	// +1 for the colon
+	// 	for (int j = i+1; j < len; j++) fputc(dec_data[j], fh);
+	// }
 }
 
 int main(int argc, char **argv) {
@@ -261,8 +243,13 @@ Options:\n\
 
 	// Print space in image(s)
 	else if (s_arg) {
-		for (int i = 0; i < index; i++)
-			puts(last_args[i]);
+		puts("Space available in image(s):");
+		for (int i = 0; i < index; i++) {
+			read_png_file(last_args[i]);
+			int space = (width * height) * (3.0f / 4.0f);
+			space -= 512 +12; // 256 for filename and 256 for AES encryption
+			printf("%s: %s\n", basename(last_args[i]), byteconvert(space));
+		}
 	}
 	else
 		Error(usage);
