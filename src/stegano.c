@@ -75,7 +75,10 @@ void encode(char *msg, char *img) {
 	// The different symbols are to differentiate between file data and plaintext
 
 	final_len = plen + len;
-	final_data = malloc(final_len);
+	int padding = 3 - (final_len % 3); // Data needs to be divisible by 3 before being put
+		// into the image
+	int padded_len = final_len + padding;
+	final_data = malloc(padded_len);
 	memcpy(final_data, enc_data, len);
 	free(enc_data); // All we need now is the final data
 
@@ -83,16 +86,54 @@ void encode(char *msg, char *img) {
 	// it is so we know where to stop when decoding
 	memmove(final_data+plen, final_data, len);
 	memcpy(final_data, prefix, plen);
+	// Last, add the padding of null bytes to make it divisible by 3
+	// Note: this will get removed in the end because
+	// we keep the size not including the padding. We need to have it divisibile by 3 because
+	// if we have 2 bits left of data, we need to store it in 1 whole pixel, which holds
+	// 6 possible bits of information
+	for (int i = final_len; i < padded_len; i++)
+		final_data[i] = '\0';
 
-
-	// Start injecting the encrypted data into the image
+	// Checking if possible
 	read_png_file(img);
 	int space = (width * height) * (3.0f / 4.0f);
-	if (final_len > space)
+	if (padded_len > space) // Make sure there is enough space in the image for the data
 		Error("Not enough space in image.\nData size: %s\nSpace available: %s",
-			byteconvert(final_len), byteconvert(space));
+			byteconvert(padded_len), byteconvert(space));
 
-	// inject data into image here
+
+	// // Main loop for injection of data
+	// for (int i = 0, x = 0, y = 0; i < padded_len; i += 3) {
+	// 	// Loop for each color component, adding 2 bits at a time
+	// 	for (int j = 0; j < 3; j++) {
+	// 		// Loop for each of 4 pixels
+	// 		for (int p = 0, x_ = x, y_ = y; p < 4; p++) {
+	// 			png_byte* ptr = &(row_pointers[y_][x_*3]);
+
+	// 			// Replace last 2 bits on color component with zeros
+	// 			ptr[j] >>= 2;
+	// 			ptr[j] <<= 2;
+
+	// 			int sh = p * 2;
+	// 			// Add 2 bits of data at a time onto different color components
+	// 			ptr[j] |= ((int)final_data[i + j] & (3 << sh)) >> sh;
+
+	// 			x_++;
+	// 			if (x_ == width) {
+	// 				x_ -= width;
+	// 				y_++;
+	// 			}
+	// 		}
+	// 	}
+
+	// 	// Continue to next set of pixels
+	// 	x += 4;
+	// 	if (x == width) {
+	// 		x -= width;
+	// 		y++;
+	// 	}
+	// }
+	// write_png_file("new-image.png"); // Save the image with the data inside it
 
 
 	free(final_data); // Done
@@ -101,24 +142,69 @@ void encode(char *msg, char *img) {
 void decode(char *img) {
 	// unsigned char *data, *dec_data;
 
-	// // ------------------------------------
-	// // encrypted data taken from image here
-	// // ------------------------------------
+	// read_png_file(img);
 
-	// int len = 0, file = 0;
-	// for (int i = 0; i < size; i++) {
-	// 	if (data[i] == '<')
-	// 		break;
-	// 	else if (data[i] == '>') {
-	// 		file = 1;
-	// 		break;
+	// char *prefix = malloc(16);
+	// int len = 0, file = 0, pindex = 0;
+	// int found_size = 0;
+	// for (int i = 0, x = 0, y = 0;; i++) {
+	// 	int temp[3] = {0, 0, 0};
+	// 	// Loop for each color component
+	// 	for (int j = 0; j < 3; j++) {
+	// 		// Loop for each pixel
+	// 		int x_ = x + 4, y_ = y;
+	// 		if (x_ == width) {
+	// 			x_ -= width;
+	// 			y++;
+	// 		}
+	// 		for (int p = 0; p < 4; p++) {
+	// 			png_byte* ptr = &(row_pointers[y_][x_*3]);
+
+	// 			temp[j] <<= 2;
+	// 			// Putting data back from the 2 least significant bits
+	// 			temp[j] |= ptr[j] & 3;
+
+	// 			x_--;
+	// 			if (x_ == 0) {
+	// 				x_ = width -1;
+	// 				y_--;
+	// 			}
+	// 		}
 	// 	}
-	// 	else {
-	// 		len *= 10;
-	// 		len += data[i] - '0'; // Ascii to int (this works for digits)
-	// 		// -----> Need to catch potential errors here. do later
+	// 	// Continue to next set of pixels
+	// 	x += 4;
+	// 	if (x == width) {
+	// 		x -= width;
+	// 		y++;
 	// 	}
+
+
+	// 	for (int k = 0; k < 3; k++) {
+	// 		prefix[pindex++] = temp[k];
+	// 	}
+	// 	for (int k = 0; k < pindex; k++) {
+	// 		if (prefix[i] == '<') {
+	// 			found_size = 1;
+	// 			break;
+	// 		}
+	// 		else if (prefix[i] == '>') {
+	// 			found_size = file = 1;
+	// 			break;
+	// 		}
+	// 		else {
+	// 			len *= 10;
+	// 			len += prefix[i] - '0'; // Ascii to int (this works for digits)
+	// 			// needs this here: Error("Hidden data either nonexistent or corrupted");
+	// 		}
+	// 	}
+	// 	if (found_size) {
+	// 		printf("%d\n", len);
+	// 		return;
+	// 	}
+	// 	else if (!found_size && pindex >= 16)
+	// 		Error("Hidden data either nonexistent or corrupted");
 	// }
+
 
 	// int plen = digits(len) +1; // Prefix length
 
