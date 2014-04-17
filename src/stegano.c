@@ -130,7 +130,7 @@ void encode(char *msg, char *img) {
 
 void decode(char *img) {
 	unsigned char *data, *dec_data;
-	char prefix[16];
+	unsigned char prefix[16];
 	int pindex = 0, dindex = 0;
 
 	read_png_file(img);
@@ -181,7 +181,7 @@ void decode(char *img) {
 			// We're looking for the prefix here
 			// First, add the data found so far into the prefix var
 			for (int k = 0; k < 3; k++)
-				prefix[pindex++] = temp_data[k];
+				prefix[pindex++] = (unsigned char)temp_data[k];
 
 			// Now check to see if we've found the whole prefix yet
 			// We should find it within 16 chars, so 6 iterations (3 chars added each time)
@@ -213,7 +213,8 @@ void decode(char *img) {
 
 				// Transfer remaining data if there is any
 				if (l < pindex -1) {
-					for (; l < pindex; l++)
+					// Skip one, the ending of the prefix
+					for (l = l + 1; l < pindex; l++)
 						data[dindex++] = prefix[l];
 				}
 			}
