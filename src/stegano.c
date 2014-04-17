@@ -178,7 +178,7 @@ void decode(char *img) {
 			}
 		}
 		else {
-			// We're looking for the prefxi here
+			// We're looking for the prefix here
 			// First, add the data found so far into the prefix var
 			for (int k = 0; k < 3; k++)
 				prefix[pindex++] = temp_data[k];
