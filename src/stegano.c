@@ -252,6 +252,8 @@ void decode(char *img) {
 		printf("Saving data to %s\n", filename);
 		fwrite(dec_data+i+1, 1, len-i-1, fp); // 1 for the colon
 		fclose(fp);
+
+		free(filename);
 	}
 	else
 		printf("%s\n", dec_data);
