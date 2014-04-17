@@ -83,9 +83,19 @@ void encode(char *msg, char *img) {
 	// Checking if possible
 	read_png_file(img);
 	int space = (width * height) * (3.0f / 4.0f);
-	if (padded_len > space) // Make sure there is enough space in the image for the data
-		Error("Not enough space in image.\nData size: %s\nSpace available: %s",
-			byteconvert(padded_len), byteconvert(space));
+	if (padded_len > space) { // Make sure there is enough space in the image for the data
+		puts("Not enough space in image.");
+		char *rspace;
+		rspace = byteconvert(padded_len);
+		printf("Data size: %s\n", rspace);
+		free(rspace);
+
+		rspace = byteconvert(space);
+		printf("Space available: %s\n", rspace);
+		free(rspace);
+
+		exit(1);
+	}
 
 
 	// Loop through all the data, 3 bytes at a time,
@@ -356,7 +366,9 @@ Options:\n\
 			read_png_file(last_args[i]);
 			int space = (width * height) * (3.0f / 4.0f);
 			space -= 512 +12; // 256 for filename and 256 for AES encryption
-			printf("%s: %s\n", basename(last_args[i]), byteconvert(space));
+			char *rspace = byteconvert(space);
+			printf("%s: %s\n", basename(last_args[i]), rspace);
+			free(rspace);
 		}
 	}
 	else
