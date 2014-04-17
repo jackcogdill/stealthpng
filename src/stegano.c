@@ -365,7 +365,7 @@ Options:\n\
 		for (int i = 0; i < index; i++) {
 			read_png_file(last_args[i]);
 			int space = (width * height) * (3.0f / 4.0f);
-			space -= 512 +12; // 256 for filename and 256 for AES encryption
+			space -= 256+ AES_BLOCK_SIZE +12; // 256 for filename
 			char *rspace = byteconvert(space);
 			printf("%s: %s\n", basename(last_args[i]), rspace);
 			free(rspace);
