@@ -11,20 +11,6 @@
 #include "png_util.h"
 #include "AES_util.h"
 
-// For reference when modifying pixel data:
-//
-// void process_file(void) {
-// 	for (int y = 0; y < height; y++) {
-// 		png_byte* row = row_pointers[y];
-// 		for (int x = 0; x < width; x++) {
-// 			png_byte* ptr = &(row[x*3]);
-
-// 			ptr[0] = ptr[2];
-// 			ptr[1] = 0;
-// 		}
-// 	}
-// }
-
 void encode(char *msg, char *img) {
 	unsigned char *data, *enc_data, *final_data;
 	char *filename = 0;
@@ -102,140 +88,174 @@ void encode(char *msg, char *img) {
 			byteconvert(padded_len), byteconvert(space));
 
 
-	// // Main loop for injection of data
-	// for (int i = 0, x = 0, y = 0; i < padded_len; i += 3) {
-	// 	// Loop for each color component, adding 2 bits at a time
-	// 	for (int j = 0; j < 3; j++) {
-	// 		// Loop for each of 4 pixels
-	// 		for (int p = 0, x_ = x, y_ = y; p < 4; p++) {
-	// 			png_byte* ptr = &(row_pointers[y_][x_*3]);
+	// Loop through all the data, 3 bytes at a time,
+	// putting every 3 bytes into groups of 4 pixels
+	// (8 bits for 3 bytes is 24 total bits, 6 bits for each of
+	// 4 pixels (matching of total 24))
+	int pixel_loc = 0;
+	int x, y;
+	png_byte* pixel;
+	for (int i = 0; i < padded_len; i += 3, pixel_loc += 4) {
+		// next group of pixels every loop, so add 4 each time
 
-	// 			// Replace last 2 bits on color component with zeros
-	// 			ptr[j] >>= 2;
-	// 			ptr[j] <<= 2;
+		// Loop for each color component and for each byte of data
+		// (3 of each)
+		// Each byte has 8 bits, 2 of each go into each of the 4 pixels
+		for (int j = 0; j < 3; j++, pixel_loc -= 4) {
+			// reset to continue looping through the same pixels every time by doing -= 4
 
-	// 			int sh = p * 2;
-	// 			// Add 2 bits of data at a time onto different color components
-	// 			ptr[j] |= ((int)final_data[i + j] & (3 << sh)) >> sh;
+			// Loop for each of 4 pixels to put the data into
+			for (int p = 0; p < 4; p++, pixel_loc++) {
+				x = pixel_loc % width, y = pixel_loc / width;
+				pixel = &(row_pointers[y][x*3]);
 
-	// 			x_++;
-	// 			if (x_ == width) {
-	// 				x_ -= width;
-	// 				y_++;
-	// 			}
-	// 		}
-	// 	}
+				// j for color component
+				// Replace last 2 bits with zeros
+				pixel[j] &= ~3;
 
-	// 	// Continue to next set of pixels
-	// 	x += 4;
-	// 	if (x == width) {
-	// 		x -= width;
-	// 		y++;
-	// 	}
-	// }
-	// write_png_file("new-image.png"); // Save the image with the data inside it
+				int sh = p * 2;
+				// Add 2 bits of data at a time
+				pixel[j] |= ((int)final_data[i + j] & (3 << sh)) >> sh;
+				// & 3 gets only the last 2 bits of the data (1 byte) because
+				// 3 is 00000011 in binary,
+				// 3 << 2 is 00001100, 3 << 4 is 00110000, etc
+			}
+		}
+	}
+	write_png_file("new-image.png"); // Save the image with the data inside it
 
 
-	free(final_data); // Done
+	free(final_data); // Done with this
 }
 
 void decode(char *img) {
-	// unsigned char *data, *dec_data;
+	unsigned char *data, *dec_data;
+	char prefix[16];
+	int pindex = 0, dindex = 0;
 
-	// read_png_file(img);
+	read_png_file(img);
 
-	// char *prefix = malloc(16);
-	// int len = 0, file = 0, pindex = 0;
-	// int found_size = 0;
-	// for (int i = 0, x = 0, y = 0;; i++) {
-	// 	int temp[3] = {0, 0, 0};
-	// 	// Loop for each color component
-	// 	for (int j = 0; j < 3; j++) {
-	// 		// Loop for each pixel
-	// 		int x_ = x + 4, y_ = y;
-	// 		if (x_ == width) {
-	// 			x_ -= width;
-	// 			y++;
-	// 		}
-	// 		for (int p = 0; p < 4; p++) {
-	// 			png_byte* ptr = &(row_pointers[y_][x_*3]);
+	int found_prefix = 0, file = 0;
+	int len = 0; // the length of the data to find
+	// Main loop through pixels
+	int pixel_loc = 3; // start with 4th one (0, 1, 2, 3)
+	int x, y;
+	png_byte* pixel;
+	for (;; pixel_loc += 4) {
+		int temp_data[3] = {0, 0, 0}; // 3 bytes of data at a time (stored as ints,
+			// later cast to char)
 
-	// 			temp[j] <<= 2;
-	// 			// Putting data back from the 2 least significant bits
-	// 			temp[j] |= ptr[j] & 3;
+		// Loop for each color component (and byte of data)
+		for (int j = 0; j < 3; j++, pixel_loc += 4) {
+			// reset to continue looping through the same pixels every time by doing += 4
+			// going through them backwards this time to regain the data
 
-	// 			x_--;
-	// 			if (x_ == 0) {
-	// 				x_ = width -1;
-	// 				y_--;
-	// 			}
-	// 		}
-	// 	}
-	// 	// Continue to next set of pixels
-	// 	x += 4;
-	// 	if (x == width) {
-	// 		x -= width;
-	// 		y++;
-	// 	}
+			for (int p = 0; p < 4; p++, pixel_loc--) {
+				x = pixel_loc % width, y = pixel_loc / width;
+				pixel = &(row_pointers[y][x*3]);
 
+				// slowly expand and add room for 2 bits of data every time
+				temp_data[j] <<= 2;
+				temp_data[j] |= pixel[j] & 3; // adding on 2 bits
+					// & 3 is to only get the last 2 bits on the end
+					// (After all, the data is only stored in the least 2 significant
+					// bits of each color component of each pixel)
+			}
+		}
 
-	// 	for (int k = 0; k < 3; k++) {
-	// 		prefix[pindex++] = temp[k];
-	// 	}
-	// 	for (int k = 0; k < pindex; k++) {
-	// 		if (prefix[i] == '<') {
-	// 			found_size = 1;
-	// 			break;
-	// 		}
-	// 		else if (prefix[i] == '>') {
-	// 			found_size = file = 1;
-	// 			break;
-	// 		}
-	// 		else {
-	// 			len *= 10;
-	// 			len += prefix[i] - '0'; // Ascii to int (this works for digits)
-	// 			// needs this here: Error("Hidden data either nonexistent or corrupted");
-	// 		}
-	// 	}
-	// 	if (found_size) {
-	// 		printf("%d\n", len);
-	// 		return;
-	// 	}
-	// 	else if (!found_size && pindex >= 16)
-	// 		Error("Hidden data either nonexistent or corrupted");
-	// }
+		if (found_prefix) {
+			// Stop before adding too much data
+			// We can't go over the len, this removes any padded null bytes
+			// just to fit into the image evenly
+			if (len - (dindex + 3) <= 0) {
+				for (int k = 0; dindex < len; k++)
+					data[dindex++] = (unsigned char)temp_data[k];
+				break; // Found all the data; stop looping
+			}
+			else {
+				for (int k = 0; k < 3; k++)
+					data[dindex++] = temp_data[k];
+			}
+		}
+		else {
+			// We're looking for the prefxi here
+			// First, add the data found so far into the prefix var
+			for (int k = 0; k < 3; k++)
+				prefix[pindex++] = temp_data[k];
 
+			// Now check to see if we've found the whole prefix yet
+			// We should find it within 16 chars, so 6 iterations (3 chars added each time)
+			int l;
+			for (l = 0; l < pindex; l++) {
+				if (prefix[l] == '<') {
+					found_prefix = 1;
+					break;
+				}
+				else if (prefix[l] == '>') {
+					found_prefix = file = 1;
+					break;
+				}
+				else {
+					// The prefix starts with the length
+					// Look for the length, if we can't find it then there's no data here
+					len *= 10;
+					int digit = prefix[l] - '0'; // Ascii to int (this works for digits)
+					if (digit < 0 || digit > 9)
+						Error("Hidden data either nonexistent or corrupted");
+					len += digit;
+				}
+			}
 
-	// int plen = digits(len) +1; // Prefix length
+			// If we found it, transfer any trailing data from the prefix to the main data
+			// Either way, allocate memory to the main data var now
+			if (found_prefix) {
+				data = malloc(len);
 
-	// // Decrypt the data
-	// dec_data = aes_decrypt(&de, data+plen, &len);
+				// Transfer remaining data if there is any
+				if (l < pindex -1) {
+					for (; l < pindex; l++)
+						data[dindex++] = prefix[l];
+				}
+			}
+			else {
+				len = 0; // reset the len if we haven't found the whole number of it yet
+				if (pindex >= 16)
+					Error("Hidden data either nonexistent or corrupted");
+					// Prefix is never this long, just quit at this point
+			}
+		}
+	}
 
-	// // Output the plaintext
-	// if (!file) {
-	// 	puts("DATA:\n-----");
-	// 	for (int i = 0; i < len; i++) putchar(dec_data[i]);
-	// 	puts("");
-	// }
-	// else {
-	// 	int i = 0;
-	// 	// Filename cannot exceed 256
-	// 	for (; i < len && i <= 256; i++) {
-	// 		if (dec_data[i] == ':')
-	// 			break;
-	// 	}
-	// 	if (!i || i >= 256 || i >= len-1)
-	// 		Error("Wrong password or corrupt data.");
+	// Decrypt the data
+	dec_data = aes_decrypt(&de, data, &len);
+	free(data); // Done with this
 
-	// 	printf("%d\n", i);
-	// 	char *filename = malloc(i);
-	// 	memcpy(filename, dec_data, i);
+	// Output decrypted data
+	if (file) {
+		int found = 0, i;
+		for (i = 0; i < 256 +1; i++) {
+			if (dec_data[i] == ':') {
+				found = 1;
+				break;
+			}
+		}
+		if (!found)
+			Error("Could not find filename from encrypted data");
+		char *filename = malloc(i); // i is the lenght of the filename
+		memcpy(filename, dec_data, i);
 
-	// 	// output to file
-	// 	FILE *fh = fopen(filename, "wb");
-	// 	// +1 for the colon
-	// 	for (int j = i+1; j < len; j++) fputc(dec_data[j], fh);
-	// }
+		FILE *fp = fopen(filename, "wb");
+		if (!fp)
+			Error("File %s could not be opened for writing", filename);
+
+		printf("Saving data to %s\n", filename);
+		fwrite(dec_data+i+1, 1, len-i-1, fp); // 1 for the colon
+		fclose(fp);
+	}
+	else
+		printf("%s\n", dec_data);
+
+	free(dec_data); // Done
 }
 
 int main(int argc, char **argv) {
@@ -301,9 +321,8 @@ Options:\n\
 		if (e_arg && !index)
 			Error(usage);
 
-		char pass[256];
 		// Prompt for password
-		sprintf(pass, "%s", getpass("Password for encoding:"));
+		char *pass = getpass("Password for encoding:");
 		if (strcmp(pass, "") == 0)
 			Error("No password entered.");
 

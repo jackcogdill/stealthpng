@@ -8,7 +8,7 @@ char *byteconvert(unsigned long b_) {
 		b /= 1000;
 		n++;
 	}
-	char *buffer = malloc(32 * sizeof(char));
+	char *buffer = malloc(32);
 	sprintf(buffer, "%.2f%c", b, "BKMGT"[n]);
 	return buffer;
 }
