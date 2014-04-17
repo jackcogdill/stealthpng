@@ -26,7 +26,7 @@ void encode(char *msg, char *img) {
 	}
 	else {
 		filename = basename(msg);
-		int fplen = strlen(filename)+1;
+		int fplen = strlen(filename)+1; // 1 for the colon
 		char fprefix[fplen];
 		sprintf(fprefix, "%s:", filename);
 
