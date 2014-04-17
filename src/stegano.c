@@ -174,7 +174,7 @@ void decode(char *img) {
 			}
 			else {
 				for (int k = 0; k < 3; k++)
-					data[dindex++] = temp_data[k];
+					data[dindex++] = (unsigned char)temp_data[k];
 			}
 		}
 		else {
@@ -233,7 +233,7 @@ void decode(char *img) {
 	// Output decrypted data
 	if (file) {
 		int found = 0, i;
-		for (i = 0; i < 256 +1; i++) {
+		for (i = 0; i <= 256; i++) {
 			if (dec_data[i] == ':') {
 				found = 1;
 				break;
