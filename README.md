@@ -19,3 +19,9 @@ Simply run `./configure` and then `make`
 ## Todo
 
 * Add option to save encoded images to specific file names (-o)
+
+## Example
+
+Download this image and run `$ ./stegano -d <image>`. Decode with the password `onegai`.
+
+![Image](http://i.imgur.com/SFUSLoz.png)
