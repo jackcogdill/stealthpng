@@ -17,10 +17,10 @@ VPATH=src
 all: $(SOURCES) $(EXECUTABLE)
 
 $(EXECUTABLE): $(OBJECTS)
-	$(CC) $(LDLIBS) $(LDFLAGS) -o $(EXECUTABLE) $(OBJECTS)
+	$(CC) -o $(EXECUTABLE) $(OBJECTS) $(LDLIBS) $(LDFLAGS)
 
 .c.o:
-	$(CC) $(CFLAGS) $(LDFLAGS) $< -o $@
+	$(CC) $(CFLAGS) $< -o $@ $(LDFLAGS)
 
 clean:
 	rm -f $(OBJECTS) $(EXECUTABLE)
