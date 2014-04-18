@@ -3,10 +3,10 @@
 echo $'CC=gcc
 CFLAGS=-c -O3' > makefile
 
-ldlibs=`pkg-config --libs libpng libcrypto`
+ldlibs=`pkg-config --libs libpng libcrypto openssl`
 echo "LDLIBS=$ldlibs" >> makefile
 
-ldflags=`pkg-config --cflags libpng libcrypto`
+ldflags=`pkg-config --cflags libpng libcrypto openssl`
 echo "LDFLAGS=$ldflags" >> makefile
 
 echo $'EXECUTABLE=stegano
