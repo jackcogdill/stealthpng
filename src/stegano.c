@@ -2,6 +2,7 @@
 // Takes a password and can hide plain text or files inside png images (as long as the data fits).
 
 #include <unistd.h>
+#include <getopt.h>
 #include <stdio.h>
 #include <string.h>
 #include <libgen.h>
