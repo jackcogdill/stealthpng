@@ -9,8 +9,8 @@ echo "LDLIBS=$ldlibs -lm" >> makefile
 ldflags=`pkg-config --cflags libpng libcrypto openssl`
 echo "LDFLAGS=$ldflags" >> makefile
 
-echo $'EXECUTABLE=stegano
-SOURCES=stegano.c AES_util.c png_util.c util.c Error.c
+echo $'EXECUTABLE=stealthpng
+SOURCES=stealthpng.c AES_util.c png_util.c util.c Error.c
 OBJECTS=$(SOURCES:.c=.o)
 VPATH=src
 

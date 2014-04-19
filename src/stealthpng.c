@@ -1,4 +1,4 @@
-// Steganography program made by Yentup
+// Stealthpng is a steganography program made by Yentup
 // Takes a password and can hide plain text or files inside png images (as long as the data fits).
 
 #include <unistd.h>

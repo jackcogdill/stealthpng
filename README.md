@@ -1,8 +1,8 @@
-# stegano
+# stealthpng
 
 ## About
 
-Stegano is a steganography program made by Yentup written in C. It uses [libpng](http://libpng.org/pub/png/libpng.html) and [openssl](https://www.openssl.org/) for encryption.
+Stealthpng is a steganography program made by Yentup written in C. It uses [libpng](http://libpng.org/pub/png/libpng.html) and [openssl](https://www.openssl.org/) for encryption.
 
 ## License and credits
 
@@ -27,6 +27,6 @@ Simply run `./configure` and then `make`
 
 ## Example
 
-Download this image and run `$ ./stegano -d <image>`. Decode with the password `onegai`.
+Download this image and run `$ ./stealthpng -d <image>`. Decode with the password `onegai`.
 
 ![Image](http://i.imgur.com/SFUSLoz.png)
