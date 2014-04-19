@@ -4,7 +4,7 @@
 // Fills in the encryption and decryption ctx objects and returns 0 on success
 int aes_init(unsigned char *key_data, int key_data_len, unsigned char *salt, EVP_CIPHER_CTX *e_ctx, 
 	EVP_CIPHER_CTX *d_ctx) {
-	int nrounds = 0x10000; // hash 2^16 times
+	int nrounds = 65536; // hash 2^16 times
 	unsigned char key[32], iv[32];
 
 	// Gen key & IV for AES 256 CBC mode. A SHA512 digest is used to hash the supplied key material.
