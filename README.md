@@ -12,7 +12,7 @@ Stegano is a steganography program made by Yentup written in C. It uses `libpng`
  * For security, there is no way of knowing if the decryption was successful. If you input an incorrect password, the resulting data will just be a bunch of garbage
 
 ## Compiling
-> _Note: Must have [libpng](http://libpng.org/pub/png/libpng.html) and [openssl](https://www.openssl.org/) libraries installed to compile correctly_
+> _Note: Must have [libpng](http://libpng.org/pub/png/libpng.html) and [openssl](https://www.openssl.org/) libraries installed to compile correctly, as well as [pkg-config](http://www.freedesktop.org/wiki/Software/pkg-config/)_
 
 Simply run `./configure` and then `make` 
 
