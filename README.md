@@ -19,11 +19,7 @@ Otherwise completely written from scratch by Yentup and licensed with [GPLv3](ht
 ## Compiling
 > _Note: Must have [libpng](http://libpng.org/pub/png/libpng.html) and [openssl](https://www.openssl.org/) libraries installed to compile correctly, as well as [pkg-config](http://www.freedesktop.org/wiki/Software/pkg-config/)_
 
-Simply run `./configure` and then `make` 
-
-## Todo
-
-* Add option to save encoded images to specific file names (-o)
+Simply run `./configure` and then `make`.
 
 ## Example
 

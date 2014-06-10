@@ -12,7 +12,7 @@
 #include "png_util.h"
 #include "AES_util.h"
 
-void encode(char *msg, char *img) {
+void encode(char *msg, char *img, char *out_filename) {
 	unsigned char *data, *enc_data, *final_data;
 	char *filename = 0;
 	int len, plen, final_len;
@@ -133,7 +133,12 @@ void encode(char *msg, char *img) {
 			}
 		}
 	}
-	write_png_file("new-image.png"); // Save the image with the data inside it
+	// Save the image with the data inside it
+	// (use output filename if specified, otherwsie just "new-image.png")
+	if (out_filename)
+		write_png_file(out_filename);
+	else
+		write_png_file("new-image.png");
 
 
 	free(final_data); // Done with this
@@ -291,15 +296,18 @@ Options:\n\
   -e  Encode data into image\n\
   -d  Decode data from image\n\
   -s  Space available in image(s) (the higher the\n\
-      resolution, the more space available)\
+      resolution, the more space available)\n\
+  -o  When encoding, use this filename for the\n\
+      new image\
 ";
 	char *e_arg = 0,
 	     *d_arg = 0,
-	     *s_arg = 0;
+	     *s_arg = 0,
+	     *o_arg = 0;
 	int c;
 	opterr = 0;
 
-	while ((c = getopt (argc, argv, "hd:e:s:")) != -1) {
+	while ((c = getopt(argc, argv, "hd:e:s:o:")) != -1) {
 		switch(c) {
 			case 'h':
 				puts(usage);
@@ -314,6 +322,9 @@ Options:\n\
 				break;
 			case 's':
 				s_arg = optarg;
+				break;
+			case 'o':
+				o_arg = optarg;
 				break;
 			case '?':
 				break;
@@ -354,7 +365,7 @@ Options:\n\
 	}
 	// Encode
 	if (e_arg)
-		encode(e_arg, last_args[0]);
+		encode(e_arg, last_args[0], o_arg);
 
 	// Decode
 	else if (d_arg)
