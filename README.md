@@ -11,7 +11,7 @@ Otherwise completely written from scratch by Yentup and licensed with [GPLv3](ht
 
 ## Features
 
-* Hides plaintext data or files in the least significant bits of png images
+* Hides plaintext data or files in the least significant bits of pixels in png images
 * Uses 256 bit AES for encryption
  * To protect against brute forcing, the password is hashed 65536 times with SHA512 for the key (still, the longer the password, the more secure it is)
  * For security, there is no way of knowing if the decryption was successful. If you input an incorrect password, the resulting data will just be a bunch of garbage
