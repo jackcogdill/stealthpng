@@ -23,11 +23,11 @@ Simply run `./configure && make`
 
 ## Example
 
-Download this image and run `$ ./stealthpng -d <image>`. Decode with the password `onegai`.
+Download this image and run `$ ./stealthpng -d <image>`. Decode with the password `onegai`
 
 ![Image](http://i.imgur.com/SFUSLoz.png)
 
 ## Help
-> _Note: when encoding, by default the program outputs to a new png file called "new-image.png".
+> _Note: when encoding, by default the program outputs to a new png file called "new-image.png"_
 
 Run `./stealthpng -h` for more options.
