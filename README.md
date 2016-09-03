@@ -25,7 +25,7 @@ Simply run `./configure && make`
 
 Download this image and run `$ ./stealthpng -d <image>`. Decode with the password `onegai`
 
-![Image](http://i.imgur.com/SFUSLoz.png)
+![Image](http://i.imgur.com/55vxscH.png)
 
 ## Help
 > _Note: when encoding, by default the program outputs to a new png file called "new-image.png"_
