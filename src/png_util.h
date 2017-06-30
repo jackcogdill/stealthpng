@@ -1,7 +1,7 @@
 // Copyright 2002-2010 Guillaume Cottenceau.
 // This software may be freely redistributed under the terms
 // of the X11 license.
-// Modified by Yentup (2014)
+// Modified by Jack Cogdill (2014)
 
 #ifndef PNG_UTIL_H
 #define PNG_UTIL_H

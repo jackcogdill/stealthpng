@@ -1,7 +1,7 @@
 // AES encryption/decryption program using OpenSSL EVP apis
 // This is public domain code.
 // Saju Pillai (saju.pillai@gmail.com)
-// Modified by Yentup (2014)
+// Modified by Jack Cogdill (2014)
 
 #ifndef AES_UTIL_H
 #define AES_UTIL_H
